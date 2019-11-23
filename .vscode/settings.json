@@ -1,0 +1,12 @@
+{
+    "files.associations": {
+        "array": "cpp",
+        "*.tcc": "cpp",
+        "vector": "cpp",
+        "functional": "cpp",
+        "optional": "cpp",
+        "string_view": "cpp",
+        "system_error": "cpp"
+    },
+    "C_Cpp.dimInactiveRegions": false
+}

@@ -33,6 +33,10 @@ int BaseCase::numtracers() const { /* total number of tracers */
     return numActive() + numPassive();
 }
 
+bool BaseCase::diffBCs() const {
+    return false;
+}
+
 int BaseCase::size_x() const {
     return size_cube();
 }
@@ -88,6 +92,12 @@ void BaseCase::tracer_bc_y(int t_num, double & dir, double & neu) const {
     return;
 }
 void BaseCase::tracer_bc_z(int t_num, double & dir, double & neu) const {
+    
+    tracer_top_bc_z(t_num,dir,neu);
+    return;
+}
+
+void BaseCase::tracer_top_bc_z(int t_num, double & dir, double & neu) const {
     if (!zero_tracer_boundary) {
         dir = 0; 
         neu = 1;
@@ -98,6 +108,18 @@ void BaseCase::tracer_bc_z(int t_num, double & dir, double & neu) const {
     }
     return;
 }
+void BaseCase::tracer_bottom_bc_z(int t_num, double & dir, double & neu) const {
+    if (!zero_tracer_boundary) {
+        dir = 0; 
+        neu = 1;
+    }
+    else {
+        dir = 1;
+        neu = 0;
+    }
+    return;
+}
+
 bool BaseCase::tracer_bc_forcing() const {
     return false;
 }
@@ -159,6 +181,10 @@ void BaseCase::stationary_forcing(double t, DTArray & u_f, DTArray & v_f,
     u_f = 0;
     v_f = 0;
     w_f = 0;
+}
+
+void BaseCase::get_density(DTArray & temperature,DTArray & density ){
+    density = -1*temperature;
 }
 
 /* Analysis */

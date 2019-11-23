@@ -91,7 +91,8 @@ namespace NSIntegrator {
          /* Tracer boundary conditions */
          vector<double> t_xbc_dir, t_xbc_neu, // x-boundary condition, dirichlet/neumann
                         t_ybc_dir, t_ybc_neu,
-                        t_zbc_dir, t_zbc_neu;
+                        t_zbc_dir, t_zbc_neu,
+                        t_zbc_bot_dir, t_zbc_bot_neu;
 
          // Reduced-dimension BCs for boundary condition storage
          Array<double,2> left_bc, right_bc, top_bc, bottom_bc;
@@ -161,6 +162,8 @@ namespace NSIntegrator {
             t_xbc_dir(tracers.size()), t_xbc_neu(tracers.size()),
             t_ybc_dir(tracers.size()), t_ybc_neu(tracers.size()),
             t_zbc_dir(tracers.size()), t_zbc_neu(tracers.size()),
+            t_zbc_bot_dir(tracers.size()), t_zbc_bot_neu(tracers.size()),
+
             // Tracer boundary condition arrays
             left_bc(szy,szz), right_bc(szy,szz),
             top_bc(split_range(szx),blitz::Range(0,szy-1)), 
@@ -184,6 +187,7 @@ namespace NSIntegrator {
                   user->tracer_bc_x(i,t_xbc_dir[i],t_xbc_neu[i]);
                   user->tracer_bc_y(i,t_ybc_dir[i],t_ybc_neu[i]);
                   user->tracer_bc_z(i,t_zbc_dir[i],t_zbc_neu[i]);
+                  user->tracer_bottom_bc_z(i,t_zbc_bot_dir[i],t_zbc_bot_neu[i]);
                   for (int j = -2; j <= 1; j++) {
                      tracers[i]->setp(j,alloc_array());
                      tracers_forcing[i]->setp(j,alloc_array());

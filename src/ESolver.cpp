@@ -14,77 +14,105 @@ using namespace Transformer;
 //extern int plan_counts;
 namespace ESolver {
 //   using namespace TArray;
-   using TArrayn::Grad;
-   using blitz::Array;
-   using blitz::cast;
-   
-   blitz::firstIndex ii;
-   blitz::secondIndex jj;
-   blitz::thirdIndex kk;
+    using TArrayn::Grad;
+    using blitz::Array;
+    using blitz::cast;
+    
+    blitz::firstIndex ii;
+    blitz::secondIndex jj;
+    blitz::thirdIndex kk;
 
-   ElipSolver::ElipSolver(double M, TransWrapper * spec,Grad * in_grad)
-      : M(M), spec_transform(spec), gradient(in_grad),
-      cTransposer(0), rTransposer(0), rtransyz(0), ctransyz(0),
-      twod_u(0), twod_f(0)
-   {
-      
-      /* The actual spectral work here is farmed out to the Transformer class.
-         Wavenumbers will be generated when used by solve. */
-   }
-   ElipSolver::~ElipSolver() { // Empty destructor
-      if (cTransposer) delete cTransposer;
-      if (rTransposer) delete rTransposer;
-      if (rtransyz) delete rtransyz;
-      if (ctransyz) delete ctransyz;
-      if (twod_u) delete twod_u;
-      if (twod_f) delete twod_f;
-   }
+    ElipSolver::ElipSolver(double M, TransWrapper * spec,Grad * in_grad)
+        : M(M), spec_transform(spec), gradient(in_grad),
+        cTransposer(0), rTransposer(0), rtransyz(0), ctransyz(0),
+        twod_u(0), twod_f(0)
+    {
+        
+        /* The actual spectral work here is farmed out to the Transformer class.
+            Wavenumbers will be generated when used by solve. */
+    }
+    ElipSolver::~ElipSolver() { // Empty destructor
+        if (cTransposer) delete cTransposer;
+        if (rTransposer) delete rTransposer;
+        if (rtransyz) delete rtransyz;
+        if (ctransyz) delete ctransyz;
+        if (twod_u) delete twod_u;
+        if (twod_f) delete twod_f;
+    }
 
-   void ElipSolver::solve(DTArray & rhs, DTArray & output,
-         S_EXP type_x, S_EXP type_y, S_EXP type_z,
-         double zbc_a, double zbc_b, double xbc_a, double xbc_b,
-         double ybc_a, double ybc_b) {
-      if (xbc_a == 0 && xbc_b == 0) {
-         xbc_a = zbc_a; xbc_b = zbc_b;
-      } if (ybc_a == 0 && ybc_b == 0) {
-         ybc_a = zbc_a; ybc_b = zbc_b;
-      }
+    void ElipSolver::solve_diffBC(DTArray & rhs, DTArray & output,
+        S_EXP type_x, S_EXP type_y, S_EXP type_z,
+        double zbc_top_a, double zbc_top_b, 
+        double zbc_bottom_a, double zbc_bottom_b,
+        double xbc_a, double xbc_b,
+        double ybc_a, double ybc_b) {
 
-//      int plan_before = plan_counts;
-      // Select which solver we're using
-      if (type_z == CHEBY && type_x != CHEBY && type_y != CHEBY &&
-            gradient->constant_diagonal_jac())
-            {
-         /* With no coordinate mapping, a Chebyshev expansion in the vertical, and
-            a trig expansion of some sort in the horizontal, use the specialized
-            1D solver (FD preconditioner, GMRES) */
-         chebz_solve(rhs, output, type_x, type_y, zbc_a, zbc_b);
-         return;
-      } else if (gradient->constant_diagonal_jac() && type_x != CHEBY && type_z != CHEBY){
-         /* With a triple-trig expansion, the solve is algebraic under the proper
-            transform.  Boundary conditions are also implied by the symmetry, so
-            the given ones are unused. */
-         threespec_solve(rhs, output, type_x, type_y, type_z);
-         return;
-      } else {
-         /* Otherwise, use the more general 2D-multigrid solver */
-         if (type_z != CHEBY) {
-            if (master()) 
-               fprintf(stderr,"ERROR: Multigrid/GMRES solver only supported with Chebyshev vertical\n");
-            abort();
-         }
-         if (type_y == CHEBY || !gradient->constant_jac(secondDim,firstDim) ||
-               !gradient->constant_jac(secondDim,secondDim) ||
-               !gradient->constant_jac(secondDim,thirdDim)) {
-            if (master())
-               fprintf(stderr,"ERROR: Complicated spanwise mappings are currently unsupported\n");
-            abort();
-         }
-         twodeemg_solve(rhs,output,type_x,type_y,zbc_a, zbc_b, xbc_a, xbc_b);
-         return;
+            // Select which solver we're using
+            if (type_z == CHEBY && type_x != CHEBY && type_y != CHEBY &&
+                    gradient->constant_diagonal_jac())
+                    {
+                /* With no coordinate mapping, a Chebyshev expansion in the vertical, and
+                    a trig expansion of some sort in the horizontal, use the specialized
+                    1D solver (FD preconditioner, GMRES) */
+                chebz_solve(rhs, output, type_x, type_y, 
+                zbc_top_a, zbc_top_b,
+                zbc_bottom_a, zbc_bottom_b);
+                return;
 
-      }
-   }
+            } else {
+                /* Otherwise, use the more general 2D-multigrid solver */
+                if (master()) 
+                    fprintf(stderr,"ERROR: Asymmetric BCs only implemented with unmapped grid and Periodic Lateral.\n");
+                abort();
+            }
+        }
+
+    void ElipSolver::solve(DTArray & rhs, DTArray & output,
+            S_EXP type_x, S_EXP type_y, S_EXP type_z,
+            double zbc_a, double zbc_b, 
+            double xbc_a, double xbc_b,
+            double ybc_a, double ybc_b) {
+        if (xbc_a == 0 && xbc_b == 0) {
+            xbc_a = zbc_a; xbc_b = zbc_b;
+        } if (ybc_a == 0 && ybc_b == 0) {
+            ybc_a = zbc_a; ybc_b = zbc_b;
+        }
+
+        //      int plan_before = plan_counts;
+        // Select which solver we're using
+        if (type_z == CHEBY && type_x != CHEBY && type_y != CHEBY &&
+                gradient->constant_diagonal_jac())
+                {
+            /* With no coordinate mapping, a Chebyshev expansion in the vertical, and
+                a trig expansion of some sort in the horizontal, use the specialized
+                1D solver (FD preconditioner, GMRES) */
+            chebz_solve(rhs, output, type_x, type_y, zbc_a, zbc_b);
+            return;
+        } else if (gradient->constant_diagonal_jac() && type_x != CHEBY && type_z != CHEBY){
+            /* With a triple-trig expansion, the solve is algebraic under the proper
+                transform.  Boundary conditions are also implied by the symmetry, so
+                the given ones are unused. */
+            threespec_solve(rhs, output, type_x, type_y, type_z);
+            return;
+        } else {
+            /* Otherwise, use the more general 2D-multigrid solver */
+            if (type_z != CHEBY) {
+                if (master()) 
+                fprintf(stderr,"ERROR: Multigrid/GMRES solver only supported with Chebyshev vertical\n");
+                abort();
+            }
+            if (type_y == CHEBY || !gradient->constant_jac(secondDim,firstDim) ||
+                !gradient->constant_jac(secondDim,secondDim) ||
+                !gradient->constant_jac(secondDim,thirdDim)) {
+                if (master())
+                fprintf(stderr,"ERROR: Complicated spanwise mappings are currently unsupported\n");
+                abort();
+            }
+            twodeemg_solve(rhs,output,type_x,type_y,zbc_a, zbc_b, xbc_a, xbc_b);
+            return;
+
+        }
+    }    
 
 
    /* Specialization for the x/z multigrid case, with y being trig/Fourier in 
@@ -266,10 +294,21 @@ namespace ESolver {
       }
    }
       
-
-   /* Specialization of Elliptic solver for x/y-trig, z-cheby expansion */
-   void ElipSolver::chebz_solve(DTArray & rhs, DTArray & output,
+    /* Specialization of Elliptic solver for x/y-trig, z-cheby expansion */
+    void ElipSolver::chebz_solve(DTArray & rhs, DTArray & output,
          S_EXP type_x, S_EXP type_y, double bc_a, double bc_b) {
+
+        chebz_solve(rhs,output,
+         type_x, type_y, bc_a, bc_b,
+          bc_a, bc_b);
+        return;
+        
+         }
+
+    /* Jason Mod -- Different BCs */
+   void ElipSolver::chebz_solve(DTArray & rhs, DTArray & output,
+         S_EXP type_x, S_EXP type_y, double bc_top_a, double bc_top_b,
+         double bc_bottom_a, double bc_bottom_b) {
       /* Apply the forward transform */
       spec_transform->forward_transform(&rhs, type_x, type_y, NONE);
       int szx, szy, szz;
@@ -336,7 +375,7 @@ namespace ESolver {
               /* The problem is separable in x/z and real/imaginary */
                resid=real(transyz(iii,jjj,blitz::Range::all()));
                int iter_count = 
-                  poisson_1d(resid,soln,Lz,-(ks(iii)+ls(jjj)-M),bc_a,bc_a,bc_b,bc_b);
+                  poisson_1d(resid,soln,Lz,-(ks(iii)+ls(jjj)-M),bc_top_a,bc_bottom_a,bc_top_b,bc_bottom_b);
 //               printf("(%d, %d: %f)r [%d]\n",iii,jjj,-(ks(iii)+ls(jjj)-M),iter_count);
 //               cout << resid << soln;
                if (iter_count <= 0) {
@@ -349,7 +388,7 @@ namespace ESolver {
                
                resid=imag(transyz(iii,jjj,blitz::Range::all()));
                iter_count = 
-                  poisson_1d(resid,soln,Lz,-(ks(iii)+ls(jjj)-M),bc_a,bc_a,bc_b,bc_b);
+                  poisson_1d(resid,soln,Lz,-(ks(iii)+ls(jjj)-M),bc_top_a,bc_bottom_a,bc_top_b,bc_bottom_b);
 //               printf("(%d, %d: %f)i [%d]\n",iii,jjj,-(ks(iii)+ls(jjj)-M),iter_count);
 //               cout << resid << soln;*/
                if (iter_count <= 0) {
@@ -406,7 +445,7 @@ namespace ESolver {
                resid=transyz(iii,jjj,blitz::Range::all());
 //               fprintf(stderr,"Solving (%d,%d: %g [%g-%g]) rnorm %g\n",iii,jjj,M,bc_a,bc_b,max(abs(resid)));
                int iter_count = 
-                  poisson_1d(resid,soln,Lz,-(ks(iii)+ls(jjj)-M),bc_a,bc_a,bc_b,bc_b);
+                  poisson_1d(resid,soln,Lz,-(ks(iii)+ls(jjj)-M),bc_top_a,bc_bottom_a,bc_top_b,bc_bottom_b);
                gcount += iter_count;
                if (iter_count <= 0) {
                   fprintf(stderr,"ERROR: Solve (%d, %d: %f) all-real did not converge\nReturned GMRES iteration cout of %d\n",iii,jjj,-(ks(iii)+ls(jjj)-M),iter_count);

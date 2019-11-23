@@ -329,6 +329,27 @@ namespace NSIntegrator {
 //               fprintf(stderr,"After BC copy\n");
 //               cerr << (*tracers[i])[1];
 //               if (master()) fprintf(stderr,"Diffusivity solve tracer %u\n",i);
+            /*
+            Modified Code to be used if usercode switch diffBCs is true
+            This accepts two different BCs at the top and bottom
+            Code expects that 
+            ---->   usercode->tracer_bottom_bc_z
+            Has been appropriately implemented
+            */
+            
+            if (usercode->diffBCs()){
+
+                visc_solver->solve_diffBC((*tracers[i])[1],(*tracers[i])[1],
+                     (Sx == REAL) ? (t_xbc_neu[i] == 0 ? SINE : COSINE) : Sx,
+                     (Sy == REAL) ? (t_ybc_neu[i] == 0 ? SINE : COSINE) : Sy,
+                     (Sz == REAL) ? (t_zbc_neu[i] == 0 ? SINE : COSINE) : Sz,
+                     t_zbc_dir[i],t_zbc_neu[i],
+                     t_zbc_bot_dir[i],t_zbc_bot_neu[i],
+                     t_xbc_dir[i],t_xbc_neu[i],
+                     t_ybc_dir[i],t_ybc_neu[i]);
+
+            }else{
+
                visc_solver->solve((*tracers[i])[1],(*tracers[i])[1],
                      (Sx == REAL) ? (t_xbc_neu[i] == 0 ? SINE : COSINE) : Sx,
                      (Sy == REAL) ? (t_ybc_neu[i] == 0 ? SINE : COSINE) : Sy,
@@ -338,6 +359,7 @@ namespace NSIntegrator {
                      t_ybc_dir[i],t_ybc_neu[i]);
 //               cerr << (*tracers[i])[1];
 //               exit(1);
+            }
             }
          }
             

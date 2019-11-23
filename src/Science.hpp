@@ -44,6 +44,11 @@ void enstrophy_density(TArrayn::DTArray & enst, TArrayn::DTArray & u, TArrayn::D
 void dissipation(TArrayn::DTArray & diss, TArrayn::DTArray & u, TArrayn::DTArray & v,
         TArrayn::DTArray & w, TArrayn::Grad * gradient_op, const string * grid_type,
         const int Nx, const int Ny, const int Nz, const double visco);
+// Tracer dissipation                                                           
+void compute_xi(TArrayn::DTArray & xi, TArrayn::DTArray & rho, TArrayn::Grad * \
+gradient_op, const string * grid_type,
+        const int Nx, const int Ny, const int Nz, const double diffusivity);
+
 
 // Background Potential Energy (BPE)
 void compute_Background_PE(double & BPE_tot, TArrayn::DTArray & rho, TArrayn::DTArray & quad3,

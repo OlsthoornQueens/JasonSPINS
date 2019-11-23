@@ -81,6 +81,15 @@ namespace ESolver {
                S_EXP type_z=FOURIER, double zbc_a=0, double zbc_b = 0,
                double xbc_a=0, double xbc_b=0,
                double ybc_a=0, double ybc_b=0);
+
+        void solve_diffBC(DTArray & rhs, DTArray & output,
+               S_EXP type_x=FOURIER, S_EXP type_y=FOURIER, 
+               S_EXP type_z=FOURIER, 
+               double zbc_top_a=0, double zbc_top_b = 0,
+               double zbc_bottom_a=0, double zbc_bottom_b = 0,
+               double xbc_a=0, double xbc_b=0,
+               double ybc_a=0, double ybc_b=0);
+               
          /* For timestepping: reset the Helmholtz parameter */
          void change_m(double M);
       private:
@@ -99,6 +108,14 @@ namespace ESolver {
             including (identical) BC types for the top and bottom */
          void chebz_solve(DTArray & rhs, DTArray & output,
                S_EXP type_x, S_EXP type_y, double zbc_a, double zbc_b);
+
+         /* Specialization for one Chebyshev dimension (vertical),
+            including (different) BC types for the top and bottom */
+         void chebz_solve(DTArray & rhs, DTArray & output,
+               S_EXP type_x, S_EXP type_y, 
+               double zbc_top_a, double zbc_top_b, 
+               double zbc_bottom_a,double zbc_bottom_b);
+
 
          /* Specialization for the 2D GMRES/Multigrid solve,
             with identical BCs at all solid interfaces */

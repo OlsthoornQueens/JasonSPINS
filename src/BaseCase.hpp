@@ -34,6 +34,8 @@ class BaseCase {
       virtual int numActive() const; // Number of active tracers
       virtual int numPassive() const; // Number of passive tracers
       virtual int numtracers() const; // Number of tracers (total)
+      virtual bool diffBCs() const;   // If different top/bot BCs (boolean)
+
 
       /* Grid generataion */
       virtual int size_x() const; // Grid points in x
@@ -71,7 +73,11 @@ class BaseCase {
       virtual void tracer_bc_x(int tracernum, double & dirichlet, double & neumann) const;
       virtual void tracer_bc_y(int tracernum, double & dirichlet, double & neumann) const;
       virtual void tracer_bc_z(int tracernum, double & dirichlet, double & neumann) const;
+      virtual void tracer_top_bc_z(int tracernum, double & dirichlet, double & neumann) const;
+      virtual void tracer_bottom_bc_z(int tracernum, double & dirichlet, double & neumann) const;
 
+
+      virtual void get_density(DTArray & temperature,DTArray & density );
       // Whether ANY tracers will have nonzero boundary conditions.  If this is true
       // then the user forcing code is responsible for calculating/applying the proper
       // RHS at the boundaries.  If this is false (default), then the prior behaviour
