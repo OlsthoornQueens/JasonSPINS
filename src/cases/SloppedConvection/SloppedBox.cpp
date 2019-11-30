@@ -68,6 +68,7 @@ double compute_start_time;      // real (clock) time when computation begins (af
 
 // other options
 double perturb;                 // Initial velocity perturbation
+double restart_perturb;         // Restart perturbation
 
 bool compute_enstrophy;         // Compute enstrophy?
 bool compute_dissipation;       // Compute dissipation?
@@ -243,6 +244,28 @@ class userControl : public BaseCase {
             // if restarting
             if (restarting and !restart_from_dump) {
                 init_vels_restart(u, v, w);
+
+                if (restart_perturb>0.0){ 
+                    // Add a random perturbation to trigger any 3D instabilities
+                    int myrank;
+                    MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
+                    Normal<double> rnd(0,1);
+                    for (int i = u.lbound(firstDim); i <= u.ubound(firstDim); i++) {
+                        rnd.seed(i);
+                        for (int j = u.lbound(secondDim); j <= u.ubound(secondDim); j++) {
+                            for (int k = u.lbound(thirdDim); k <= u.ubound(thirdDim); k++) {
+                                u(i,j,k) += restart_perturb*rnd.random();
+                                w(i,j,k) += restart_perturb*rnd.random();
+                                if (Ny > 1) 
+                                        v(i,j,k) += restart_perturb*rnd.random();
+                                
+                            }
+                        }
+                    }
+                }
+
+
+
             } else if (restarting and restart_from_dump) {
                 init_vels_dump(u, v, w);
             } else{
@@ -1139,6 +1162,8 @@ int main(int argc, char ** argv) {
     add_option("restart",&restarting,false,"Restart from prior output time.");
     add_option("restart_time",&initial_time,0.0,"Time to restart from");
     add_option("restart_sequence",&restart_sequence,-1,"Sequence number to restart from");
+    add_option("restart_perturb",&restart_perturb,0.0,"Restart Random perturbation in velocity");
+
 
     option_category("Dumping options");
     add_option("restart_from_dump",&restart_from_dump,false,"If restart from dump");
