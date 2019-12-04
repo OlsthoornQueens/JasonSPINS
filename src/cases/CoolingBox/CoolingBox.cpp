@@ -210,19 +210,28 @@ class userControl : public BaseCase {
                 init_vels_restart(u, v, w);
 
                 if (restart_perturb>0.0){ 
-                    // Add a random perturbation to trigger any 3D instabilities
-                    int myrank;
-                    MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
-                    Normal<double> rnd(0,1);
+                    // // Add a random perturbation to trigger any 3D instabilities
+                    // int myrank;
+                    // MPI_Comm_rank(MPI_COMM_WORLD,&myrank);
+                    // Normal<double> rnd(0,1);
+                    // for (int i = u.lbound(firstDim); i <= u.ubound(firstDim); i++) {
+                    //     rnd.seed(i);
+                    //     for (int j = u.lbound(secondDim); j <= u.ubound(secondDim); j++) {
+                    //         for (int k = u.lbound(thirdDim); k <= u.ubound(thirdDim); k++) {
+                    //             u(i,j,k) += restart_perturb*rnd.random();
+                    //             w(i,j,k) += restart_perturb*rnd.random();
+                    //             if (Ny > 1) 
+                    //                     v(i,j,k) += restart_perturb*rnd.random();
+                                
+                    //         }
+                    //     }
+                    // }
                     for (int i = u.lbound(firstDim); i <= u.ubound(firstDim); i++) {
-                        rnd.seed(i);
                         for (int j = u.lbound(secondDim); j <= u.ubound(secondDim); j++) {
                             for (int k = u.lbound(thirdDim); k <= u.ubound(thirdDim); k++) {
-                                u(i,j,k) += restart_perturb*rnd.random();
-                                w(i,j,k) += restart_perturb*rnd.random();
-                                if (Ny > 1) 
-                                        v(i,j,k) += restart_perturb*rnd.random();
-                                
+                                u(i,j,k) += restart_perturb*sin(M_PI*j/Ly);
+                                v(i,j,k) += restart_perturb*sin(M_PI*i/Lx);
+                                // w(i,j,k) += restart_perturb*rnd.random();                              
                             }
                         }
                     }
