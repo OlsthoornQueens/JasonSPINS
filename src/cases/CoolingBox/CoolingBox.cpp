@@ -229,8 +229,8 @@ class userControl : public BaseCase {
                     for (int i = u.lbound(firstDim); i <= u.ubound(firstDim); i++) {
                         for (int j = u.lbound(secondDim); j <= u.ubound(secondDim); j++) {
                             for (int k = u.lbound(thirdDim); k <= u.ubound(thirdDim); k++) {
-                                u(i,j,k) += restart_perturb*sin(M_PI*j/Ly);
-                                v(i,j,k) += restart_perturb*sin(M_PI*i/Lx);
+                                u(i,j,k) += restart_perturb*sin(M_PI*j/Ny);
+                                v(i,j,k) += restart_perturb*sin(M_PI*i/Nx);
                                 // w(i,j,k) += restart_perturb*rnd.random();                              
                             }
                         }
