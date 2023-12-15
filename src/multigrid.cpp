@@ -3,7 +3,6 @@
 
 #include <blitz/array.h>
 #include <iostream>
-#include <blitz/tinyvec-et.h>
 
 #include "umfpack.h"
 #include "timing.hpp"
@@ -1897,14 +1896,14 @@ void MG_Solver::_cycle(CYCLE_TYPE cycle, Array<double,2> & f, Array<double,2> & 
             that the problem is really of size (1+size_x*size_z);
             this doesn't actually fit in u or f.  So, allocate
             static blitz-vectors for the data, if necessary. */
-         static blitz::Vector<double> extra_u(0), extra_f(0);
+         static blitz::Array<double,1> extra_u(0), extra_f(0);
 //         fprintf(stderr,"CG: Input residual\n");
 //         cerr << f;
          if (indefinite_problem) {
 //            fprintf(stderr,"Solving indefinite problem on coarse grid\n");
-            if (extra_u.length() != (size_x*size_z+1))
+            if (extra_u.length(firstDim) != (size_x*size_z+1))
                extra_u.resize(size_x*size_z+1);
-            if (extra_f.length() != (size_x*size_z+1))
+            if (extra_f.length(firstDim) != (size_x*size_z+1))
                extra_f.resize(size_x*size_z+1);
             // Copy the f-problem to extra_f
             

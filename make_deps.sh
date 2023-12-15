@@ -70,12 +70,12 @@ if [ ! "$BUILD_BLITZ" = "yes" ]; then
 else
 	echo "Building Blitz++"
 	# Download the Blitz tarball if necessary
-	if [ ! -e "blitz_2010.tgz" ]; then
-      mv redist_libs/blitz_2010.tgz ./
+	if [ ! -e "blitz_1.0.2.tar.gz" ]; then
+		mv redist_libs/blitz_1.0.2.tar.gz ./
 	fi
-	(tar -xzvf blitz_2010.tgz > /dev/null) || (echo "Untar of Blitz FAILED"; exit 1);
-	pushd blitz
-	(./configure --prefix="$CWD" --disable-fortran "${BLITZ_OPTIONS}" > /dev/null) && \
+	(tar -xzvf blitz_1.0.2.tar.gz > /dev/null) || (echo "Untar of Blitz FAILED"; exit 1);
+	pushd blitz-1.0.2
+	(autoreconf -vif && ./configure --prefix="$CWD" --disable-fortran "${BLITZ_OPTIONS}" > /dev/null) && \
 		(make lib > /dev/null) && \
 		pushd blitz && (make install > /dev/null) && popd  && \
 		pushd lib && (make install > /dev/null) && popd  && \
@@ -92,14 +92,14 @@ if [ ! "$BUILD_FFTW" = "yes" ]; then
 else
 	echo "Building FFTW"
 	# Download FFTW if necessary
-	if [ ! -e "fftw-3.3.3.tar.gz" ]; then
-      mv redist_libs/fftw-3.3.3.tar.gz ./
+	if [ ! -e "fftw-3.3.9.tar.gz" ]; then
+      mv redist_libs/fftw-3.3.9.tar.gz ./
 	fi
-	(tar -xzvf fftw-3.3.3.tar.gz > /dev/null)
+	(tar -xzvf fftw-3.3.9.tar.gz > /dev/null)
    if [ 0 -ne $? ]; then
       echo "Untar of FFTW FAILED"; exit 1
    fi
-	pushd fftw-3.3.3
+	pushd fftw-3.3.9
    # The "${FFTW_OPTIONS[@]}" syntax expands FFTW_OPTIONS as an array variable;
    # this allows for multi-word arguments like 'CFLAGS="-O3 --fast-math"' to
    # work properly as a single argument from configure's perspective.

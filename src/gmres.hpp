@@ -269,8 +269,8 @@ template <class Controller> class GMRES_Solver {
 
          /* Perform the inner iteration */
          /*  First, allocate vectors for residuals and the Krylov basis */
-         blitz::Vector<RType> resid_vec(num_its+1);
-         blitz::Vector<BType> basis_vec(num_its); // Note, these are base 0
+         blitz::Array<RType,1> resid_vec(num_its+1);
+         blitz::Array<BType,1> basis_vec(num_its); // Note, these are base 0
          for (int k = 0; k < num_its; k++) {
             resid_vec(k) = ops->alloc_resid();
             basis_vec(k) = ops->alloc_basis();
@@ -406,7 +406,7 @@ template <class Controller> class GMRES_Solver {
          return my_it-1;
       }
 
-      void build_x(BType out_x, blitz::Vector<BType> & basis_vec,
+      void build_x(BType out_x, blitz::Array<BType,1> & basis_vec,
             blitz::Array<double,1> & rhs_vec, double starting_norm,
             int my_it) {
          /* Now, the Krylov basis is in basis_vec, and the proper multiples are in

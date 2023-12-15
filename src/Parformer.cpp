@@ -2,7 +2,6 @@
 
 #include "Parformer.hpp"
 #include "Par_util.hpp"
-#include <blitz/tinyvec-et.h>
 #include <stdio.h>
 #include <iostream>
 

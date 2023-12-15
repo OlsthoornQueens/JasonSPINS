@@ -1,7 +1,6 @@
 #include "T_util.hpp"
 #include "TArray.hpp"
 #include <blitz/array.h>
-#include <blitz/tinyvec-et.h>
 #include "Par_util.hpp"
 #include <complex>
 #include <string>

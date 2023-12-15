@@ -2,7 +2,6 @@
 
 #include <vector>
 #include <blitz/array.h> 
-#include <blitz/tinyvec-et.h>
 #include <stdio.h>
 #include <iostream>
 #include <complex>
@@ -121,7 +120,7 @@ src_temp(0), dst_temp(0), issue_warning(true) {
    rec_types.resize(num_proc);  // make sure our vector can hold everything
 
    for (int i = 0; i < num_proc; i++) {
-      // We'll have to use the MPI_Type_struct syntax, so build arrays:
+      /*// We'll have to use the MPI_Type_struct syntax, so build arrays:
       MPI_Datatype types[2] = {vec_type,MPI_UB};
       int counts[2]; counts[0] = extent_from[i]; counts[1] = 1;
       // Now, set displacements to set the "end" of the datatype a full
@@ -129,8 +128,23 @@ src_temp(0), dst_temp(0), issue_warning(true) {
       MPI_Aint displs[2] = {0,sizeof(T)*sizes[untouched_dim]*sizes[from_dim]};
 
       // And make the type
-      MPI_Type_struct(2,counts,displs,types,&rec_types[i]);
+      MPI_Type_struct(2,counts,displs,types,&rec_types[i]);*/
+		
+		// This code formerly used the MPI_UB marker to define the upper bound
+		// of the derived datatype.  This was deprecated as part of the MPI-2
+		// standard, and it was removed in MPI-3.  The replacement is to use
+		// MPI_Type_create_resized to create a resized type directly.
+		
+		// First, create the multi-vector containing the data:
+		MPI_Datatype multivec;
+		MPI_Type_contiguous(extent_from[i],vec_type,&multivec);
+
+		MPI_Type_create_resized(multivec, 0,  // base type, lower bound
+				sizeof(T)*sizes[untouched_dim]*sizes[from_dim], // extent
+				&rec_types[i]); // new type
+
       MPI_Type_commit(&rec_types[i]);
+		MPI_Type_free(&multivec);
       /* Impelementation note: one optimization possible here is to collapse
          this typelist.  This impelementation makes no assumptions about how
          many part-rows are received per processor, but our default splitting

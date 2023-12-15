@@ -10,7 +10,6 @@
 #include <vector>
 #include <algorithm>
 #include <stdlib.h>
-#include <blitz/tinyvec-et.h>
 
 #include "Sorter.hpp"
 

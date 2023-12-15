@@ -1,6 +1,5 @@
 #include "TArray.hpp"
 #include "Plan_holder.hpp"
-#include <blitz/tinyvec-et.h>
 #include <assert.h>
 #include <fftw3.h> // FFTW
 /* Implementation of TArray transform functions for the relevant cases.
